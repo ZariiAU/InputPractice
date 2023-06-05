@@ -93,6 +93,7 @@ public class Movement : MonoBehaviour
         if (Input.GetAxis("Horizontal") == 0 && Input.GetAxis("Vertical") == 0)
             input = Vector2.zero;
 
+        // Apply Gravity
         velocity.y += Physics.gravity.y * Time.deltaTime;
 
         // Set our velocity to be based on our character's current orientation
@@ -100,16 +101,25 @@ public class Movement : MonoBehaviour
         velocity = (transform.forward * input.y + transform.right * input.x);
         velocity.y = temp;
 
+        // Jump
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
         {
             velocity.y += Mathf.Sqrt(jumpStrength * -Physics.gravity.y);
         }
 
-        // Move
+        // Check sprint but exclude Y speed
         if (Input.GetKey(KeyCode.LeftShift))
-            characterController.Move(velocity * sprintSpeed * Time.deltaTime );
+        {
+            velocity.x *= sprintSpeed;
+            velocity.z *= sprintSpeed;
+        }
         else
-            characterController.Move(velocity * Time.deltaTime * speed);
+        {
+            velocity.x *= speed;
+            velocity.z *= speed;
+        }
+
+        characterController.Move(velocity * Time.deltaTime);
 
     }
 }
