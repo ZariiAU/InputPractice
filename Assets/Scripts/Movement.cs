@@ -5,11 +5,13 @@ using UnityEngine;
 public class Movement : MonoBehaviour
 {
     CharacterController characterController;
+    Rigidbody rb;
     Vector2 input;
     [Header("Movement Settings")]
     public float speed = 5;
     public float sprintSpeed = 10;
     public float checkGroundedRange = 0.2f;
+    public float jumpStrength;
     [Header("Camera Settings")]
     public Camera cam;
     public float yDownLimit = 70;
@@ -20,13 +22,14 @@ public class Movement : MonoBehaviour
     float xRotationAmount = 0;
     float yRotationAmount = 0;
     Vector3 velocity;
-    RaycastHit hit;
+     RaycastHit hit;
     float rayLength = 1;
     bool isGrounded = false;
 
     // Start is called before the first frame update
     void Awake()
     {
+        rb = GetComponent<Rigidbody>();
         characterController = GetComponent<CharacterController>();
         cam = Camera.main;
     }
@@ -44,16 +47,12 @@ public class Movement : MonoBehaviour
 
         if (Physics.Raycast(transform.position, -transform.up, out hit, rayLength))
         {
-            if (hit.collider == null)
-            {
-                isGrounded = false;
-                velocity.y = 0;
-            }
-            else
-            {
-                isGrounded = true;
-            }
+            velocity.y = 0;
+
+            isGrounded = true;
         }
+        else
+            isGrounded=false;
         Debug.DrawRay(transform.position, -transform.up * rayLength, Color.red);
     }
     void Look()
@@ -94,16 +93,16 @@ public class Movement : MonoBehaviour
         if (Input.GetAxis("Horizontal") == 0 && Input.GetAxis("Vertical") == 0)
             input = Vector2.zero;
 
+        velocity.y += Physics.gravity.y * Time.deltaTime;
+
         // Set our velocity to be based on our character's current orientation
-
+        var temp = velocity.y;
         velocity = (transform.forward * input.y + transform.right * input.x);
-        velocity = (transform.forward * input.y + transform.right * input.x);
-
-        velocity.y += -9.8f * 5 * Time.deltaTime;
+        velocity.y = temp;
 
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
         {
-            velocity.y += 50 ;
+            velocity.y += Mathf.Sqrt(jumpStrength * -Physics.gravity.y);
         }
 
         // Move
